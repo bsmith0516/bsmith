@@ -1,0 +1,93 @@
+import xlsxwriter
+import time
+
+def emission(fuel):
+    co2_per_liter=(8.887 / 3.7845)
+    co2_gas_emissions=fuel * co2_per_liter
+    co2_gas_emissions=int(co2_gas_emissions)
+
+    return co2_gas_emissions
+
+
+def gas_cost(distance, gas, mpg):
+    price=distance * gas * mpg
+
+    price=int(price)
+    return price
+
+
+def el_calc(distance):
+    electricity=0.1
+    efficiency=0.148
+    el_price=distance * electricity * efficiency
+
+    el_price=int(el_price)
+    return el_price
+
+
+def life_time_savings(gas, mpg):
+    life_distance=300000
+
+    total_lt_fuel_cost=gas * mpg * life_distance
+    elec_lt_fuel_cost=0.0222 * life_distance
+
+    lt_savings=total_lt_fuel_cost - elec_lt_fuel_cost
+    lt_savings=int(lt_savings)
+    return lt_savings
+
+
+def main():
+    # Constants
+    a=0
+    outWorkbook=xlsxwriter.Workbook("Turku_amk.xlsx")
+    adding_to_excel=outWorkbook.add_worksheet()
+
+    adding_to_excel.write("A1", "Date")
+    adding_to_excel.write("B1", "Price € per liter")
+    adding_to_excel.write("C1", "Efficiency l/100km")
+
+
+    while a<2:
+        co2_per_liter=(8.887 / 3.7845)
+        life_time_distance=300000
+
+        gas_price=float(input("How much is one liter of gas?: "))
+        trip_distance=int(input("How many kilometers will be driven?: "))
+        average_efficiency=float(input("How many liters per 100km does the car get?: "))
+        calc_eff_number=average_efficiency / 100
+        total_fuel=calc_eff_number * trip_distance
+
+        trip_total_gas_cost=gas_cost(trip_distance, gas_price, calc_eff_number)
+        trip_total_elec_cost=el_calc(trip_distance)
+        lf_total_savings=life_time_savings(gas_price, calc_eff_number)
+
+        fuel_savings=trip_total_gas_cost - trip_total_elec_cost
+        emission_trip=emission(total_fuel)
+
+        emission_total_est=co2_per_liter * calc_eff_number * life_time_distance
+        emission_total=int(emission_total_est)
+
+        print("The estimated gas cost of the trip is", trip_total_gas_cost, "euros.")
+        print("The estimated electricity cost of the trip is", trip_total_elec_cost, "euros.")
+        print(f"The estimated fuel savings are {fuel_savings} euros.")
+        print(f"The estimated life time fuel savings are {lf_total_savings} euros.")
+        print(f"The estimated trip and life-time tailpipe CO2 emissions are {emission_trip} and {emission_total} grams.")
+
+    # SAVING THE DATA
+
+        record_date = time.strftime("%x")
+        adding_to_excel.write(1+a, 0, record_date)
+
+        record_price=gas_price
+        adding_to_excel.write(1+a, 1, record_price)
+
+        record_eff = average_efficiency
+        adding_to_excel.write(1+a, 2, record_eff)
+
+        a+=1
+        #loop closed
+
+    outWorkbook.close()
+
+if __name__ == "__main__":
+    main()
